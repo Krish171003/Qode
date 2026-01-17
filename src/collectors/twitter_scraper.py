@@ -130,9 +130,12 @@ class TwitterScraper:
     def _scrape_nitter_hashtag(self, hashtag, target_count):
         """Scrape tweets for a specific hashtag from Nitter"""
         clean_tag = hashtag.replace('#', '').strip()
+        time_window_hours = self.config['scraping']['time_window_hours']
+        since_date = (datetime.utcnow() - timedelta(hours=time_window_hours)).strftime('%Y-%m-%d')
+        query = f"%23{clean_tag}%20since%3A{since_date}"
         
         # Nitter search URL
-        url = f"{self.current_instance}/search?f=tweets&q=%23{clean_tag}"
+        url = f"{self.current_instance}/search?f=tweets&q={query}"
         
         try:
             logger.debug(f"Navigating to: {url}")
