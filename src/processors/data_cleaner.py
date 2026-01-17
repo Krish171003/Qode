@@ -6,7 +6,7 @@ Handles text preprocessing, Unicode normalization, and data validation
 
 import re
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import emoji
 import unicodedata
 
@@ -20,23 +20,39 @@ class DataCleaner:
         self.config = config
         self.min_length = config['processing']['min_text_length']
         self.languages = config['processing']['languages']
+        self.time_window_hours = config['scraping']['time_window_hours']
         
     def clean(self, tweets):
         """Main cleaning pipeline"""
         logger.info("Starting data cleaning pipeline...")
         
         cleaned = []
-        stats = {'removed_short': 0, 'removed_invalid': 0, 'cleaned': 0}
+        stats = {
+            'removed_short': 0,
+            'removed_invalid': 0,
+            'removed_out_of_window': 0,
+            'removed_invalid_timestamp': 0,
+            'cleaned': 0,
+        }
+        cutoff_time = datetime.now() - timedelta(hours=self.time_window_hours)
         
         for tweet in tweets:
             try:
+                tweet_timestamp = self._parse_timestamp(tweet.get('timestamp'))
+                if not tweet_timestamp:
+                    stats['removed_invalid_timestamp'] += 1
+                    continue
+                if tweet_timestamp < cutoff_time:
+                    stats['removed_out_of_window'] += 1
+                    continue
+
                 # Skip if too short
                 if len(tweet.get('content', '')) < self.min_length:
                     stats['removed_short'] += 1
                     continue
                 
                 # Clean the tweet
-                cleaned_tweet = self._clean_tweet(tweet)
+                cleaned_tweet = self._clean_tweet(tweet, tweet_timestamp)
                 
                 if cleaned_tweet:
                     cleaned.append(cleaned_tweet)
@@ -51,7 +67,7 @@ class DataCleaner:
         logger.info(f"Cleaning stats: {stats}")
         return cleaned
     
-    def _clean_tweet(self, tweet):
+    def _clean_tweet(self, tweet, tweet_timestamp):
         """Clean individual tweet"""
         # Deep copy to avoid modifying original
         cleaned = tweet.copy()
@@ -99,7 +115,8 @@ class DataCleaner:
             cleaned['replies'] * 1.5
         )
         
-        # Add processing timestamp
+        # Normalize timestamp to ISO format for downstream processing
+        cleaned['timestamp'] = tweet_timestamp.isoformat()
         cleaned['processed_at'] = datetime.now().isoformat()
         
         return cleaned if len(content) >= self.min_length else None
@@ -125,3 +142,42 @@ class DataCleaner:
         if hindi_ratio > 0.3:
             return 'hi'
         return 'en'
+
+    def _parse_timestamp(self, timestamp):
+        """Parse tweet timestamps from Nitter or ISO formats."""
+        if not timestamp:
+            return None
+
+        if isinstance(timestamp, datetime):
+            return timestamp
+
+        if isinstance(timestamp, (int, float)):
+            try:
+                return datetime.fromtimestamp(timestamp)
+            except (OSError, ValueError):
+                return None
+
+        if isinstance(timestamp, str):
+            cleaned = timestamp.replace('·', '').strip()
+            cleaned = ' '.join(cleaned.split())
+            formats = [
+                '%b %d, %Y %I:%M %p %Z',
+                '%b %d, %Y %I:%M %p',
+                '%b %d, %Y',
+                '%Y-%m-%dT%H:%M:%S%z',
+                '%Y-%m-%dT%H:%M:%S',
+            ]
+
+            for fmt in formats:
+                try:
+                    return datetime.strptime(cleaned, fmt)
+                except ValueError:
+                    continue
+
+            try:
+                return datetime.fromisoformat(cleaned.replace('Z', '+00:00'))
+            except ValueError:
+                logger.debug("Unable to parse timestamp: %s", timestamp)
+                return None
+
+        return None
