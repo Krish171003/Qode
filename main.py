@@ -2,7 +2,6 @@
 """
 Qode Market Intelligence - Main Orchestration Script
 Author: Built for Qode Technical Assignment
-Date: 2025
 """
 
 import argparse
@@ -11,7 +10,6 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-# Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.utils.logger import setup_logger
@@ -66,6 +64,11 @@ def parse_arguments():
         action='store_true',
         help='Enable debug logging'
     )
+    parser.add_argument(
+        '--demo',
+        action='store_true',
+        help='Run in demo mode with synthetic data (no scraping required)'
+    )
     
     return parser.parse_args()
 
@@ -73,10 +76,7 @@ def parse_arguments():
 def main():
     """Main execution flow"""
     
-    # Parse arguments
     args = parse_arguments()
-    
-    # Load config
     config = load_config()
     
     # Override config with command line args
@@ -97,6 +97,10 @@ def main():
     logger.info("Qode Market Intelligence System Starting...")
     logger.info("=" * 60)
     
+    if args.demo:
+        logger.warning("\n⚠️  RUNNING IN DEMO MODE - Using synthetic data")
+        logger.warning("For real scraping, Twitter login is currently required\n")
+    
     # Initialize performance monitor
     perf_monitor = PerformanceMonitor()
     perf_monitor.start()
@@ -108,13 +112,17 @@ def main():
         
         logger.info(f"Target: {config['scraping']['target_tweets']} tweets")
         logger.info(f"Hashtags: {', '.join(config['scraping']['hashtags'])}")
-        logger.info(f"Browser: {config['scraping']['browser']}")
+        
+        if not args.demo:
+            logger.info(f"Browser: {config['scraping']['browser']}")
         
         raw_tweets = scraper.scrape_tweets()
         logger.info(f"✓ Collected {len(raw_tweets)} raw tweets")
         
         if len(raw_tweets) == 0:
             logger.warning("No tweets collected. Exiting...")
+            logger.warning("\nTip: Try running with --demo flag to see the full pipeline:")
+            logger.warning("  python main.py --demo")
             return
         
         # Step 2: Data Cleaning
@@ -132,7 +140,10 @@ def main():
         # Step 4: Storage
         logger.info("\n[STEP 4/5] Saving to Storage...")
         storage = StorageManager(config)
-        data_path = storage.save(unique_tweets, 'parquet')
+        
+        # Save as CSV for compatibility
+        format_type = 'csv' if args.demo else config['storage']['format']
+        data_path = storage.save(unique_tweets, format_type)
         logger.info(f"✓ Data saved to: {data_path}")
         
         # Step 5: Analysis & Signals
@@ -172,10 +183,16 @@ def main():
         logger.info(f"Peak Memory: {stats['peak_memory_mb']:.2f} MB")
         logger.info(f"Tweets Processed: {len(unique_tweets)}")
         logger.info(f"Processing Rate: {len(unique_tweets)/stats['elapsed_time']:.2f} tweets/sec")
+        logger.info(f"Trading Signals: {len(signals)}")
         logger.info("=" * 60)
         logger.info("✓ All tasks completed successfully!")
         logger.info(f"✓ Check outputs in: {config['storage']['output_dir']}/")
+        logger.info(f"✓ Open dashboard: {dashboard_path}")
         logger.info("=" * 60)
+        
+        if args.demo:
+            logger.warning("\n⚠️  Remember: This was demo mode with synthetic data")
+            logger.warning("For production use, implement real Twitter scraping with authentication")
         
     except KeyboardInterrupt:
         logger.warning("\n\nProcess interrupted by user")

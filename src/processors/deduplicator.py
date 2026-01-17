@@ -19,7 +19,20 @@ class Deduplicator:
         self.hash_cache = set()
         
     def deduplicate(self, tweets):
-        """Remove duplicates using content hash"""
+        """
+    Remove duplicates using content hash
+    
+    Complexity Analysis:
+    - Hash-based: O(n) - current implementation
+    - Pairwise comparison: O(n²) - avoided
+    
+    For 2000 tweets:
+    - Hash approach: ~2000 operations
+    - Naive approach: ~4,000,000 operations
+    
+    Memory: O(n) for hash set
+    """
+
         logger.info("Deduplicating tweets...")
         
         unique_tweets = []
