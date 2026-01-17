@@ -1,0 +1,92 @@
+# Qode Market Intelligence Configuration
+
+scraping:
+  target_tweets: 2000
+  time_window_hours: 24
+
+  hashtags:
+    - "#nifty50"
+    - "#sensex"
+    - "#intraday"
+    - "#banknifty"
+    - "#stockmarket"
+    - "#nse"
+    - "#bse"
+
+  browser: "chrome" # chrome or firefox
+  headless: true
+
+  delays:
+    min_scroll: 2
+    max_scroll: 5
+    page_load: 3
+
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+
+processing:
+  batch_size: 500
+  remove_duplicates: true
+  min_text_length: 10
+
+  languages:
+    - "en"
+    - "hi" # Hindi
+
+  normalize_unicode: true
+
+storage:
+  format: "parquet"
+  compression: "snappy"
+  output_dir: "data"
+
+  columns:
+    - username
+    - timestamp
+    - content
+    - likes
+    - retweets
+    - replies
+    - hashtags
+    - mentions
+    - url
+
+analysis:
+  vectorization:
+    method: "tfidf" # tfidf or word2vec
+    max_features: 1000
+    ngram_range: [1, 2]
+
+  sentiment:
+    enabled: true
+    model: "vader" # vader or custom
+
+  signals:
+    confidence_threshold: 0.6
+    lookback_minutes: 30
+    aggregation: "weighted" # simple, weighted, or exponential
+
+visualization:
+  memory_efficient: true
+  sample_size: 5000 # for large datasets
+  formats:
+    - "html"
+    - "png"
+
+  plots:
+    - "sentiment_timeline"
+    - "hashtag_frequency"
+    - "engagement_heatmap"
+    - "signal_strength"
+
+logging:
+  level: "INFO" # DEBUG, INFO, WARNING, ERROR
+  format: "detailed"
+  save_to_file: true
+  log_dir: "logs"
+
+performance:
+  concurrent_workers: 4
+  chunk_size: 100
+  enable_profiling: false
