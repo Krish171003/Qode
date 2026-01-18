@@ -33,9 +33,10 @@ class DataCleaner:
             'removed_invalid': 0,
             'removed_out_of_window': 0,
             'removed_invalid_timestamp': 0,
+            'removed_language': 0,  # Added for debugging
             'cleaned': 0,
         }
-        cutoff_time = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=self.time_window_hours)
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=self.time_window_hours)
         
         for tweet in tweets:
             try:
@@ -43,19 +44,28 @@ class DataCleaner:
                 if not tweet_timestamp:
                     stats['removed_invalid_timestamp'] += 1
                     continue
+                
+                # Ensure timezone-aware comparison
+                if tweet_timestamp.tzinfo is None:
+                    tweet_timestamp = tweet_timestamp.replace(tzinfo=timezone.utc)
+                
                 if tweet_timestamp < cutoff_time:
                     stats['removed_out_of_window'] += 1
                     continue
 
                 # Skip if too short
-                if len(tweet.get('content', '')) < self.min_length:
+                content = tweet.get('content', '')
+                if len(content) < self.min_length:
                     stats['removed_short'] += 1
                     continue
 
                 # Language gate (keeps English/Hindi focus)
-                language = self._detect_language(tweet.get('content', ''))
+                language = self._detect_language(content)
+                
+                # FIX: Check if language is in allowed list OR if allowed list is empty/None
                 if self.allowed_languages and language not in self.allowed_languages:
-                    stats['removed_invalid'] += 1
+                    stats['removed_language'] += 1
+                    logger.debug(f"Removed tweet with language '{language}', allowed: {self.allowed_languages}")
                     continue
                 
                 # Clean the tweet
@@ -125,7 +135,7 @@ class DataCleaner:
         
         # Normalize timestamp to ISO format for downstream processing
         cleaned['timestamp'] = tweet_timestamp.isoformat()
-        cleaned['processed_at'] = datetime.now().isoformat()
+        cleaned['processed_at'] = datetime.now(timezone.utc).isoformat()
         
         return cleaned if len(content) >= self.min_length else None
     
@@ -145,7 +155,7 @@ class DataCleaner:
         total_chars = len(text.replace(' ', ''))
         
         if total_chars == 0:
-            return 'unknown'
+            return 'en'  # FIX: Default to 'en' instead of 'unknown'
         
         hindi_ratio = hindi_chars / total_chars
         
@@ -159,11 +169,11 @@ class DataCleaner:
             return None
 
         if isinstance(timestamp, datetime):
-            return timestamp.astimezone(timezone.utc).replace(tzinfo=None) if timestamp.tzinfo else timestamp
+            return timestamp.astimezone(timezone.utc) if timestamp.tzinfo else timestamp.replace(tzinfo=timezone.utc)
 
         if isinstance(timestamp, (int, float)):
             try:
-                return datetime.fromtimestamp(timestamp)
+                return datetime.fromtimestamp(timestamp, tz=timezone.utc)
             except (OSError, ValueError):
                 return None
 
@@ -180,14 +190,18 @@ class DataCleaner:
 
             for fmt in formats:
                 try:
-                    return datetime.strptime(cleaned, fmt)
+                    parsed = datetime.strptime(cleaned, fmt)
+                    # Make timezone-aware if not already
+                    if parsed.tzinfo is None:
+                        parsed = parsed.replace(tzinfo=timezone.utc)
+                    return parsed
                 except ValueError:
                     continue
 
             try:
                 parsed = datetime.fromisoformat(cleaned.replace('Z', '+00:00'))
-                if parsed.tzinfo:
-                    parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=timezone.utc)
                 return parsed
             except ValueError:
                 logger.debug("Unable to parse timestamp: %s", timestamp)

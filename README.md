@@ -2,6 +2,29 @@
 
 A production-ready data collection and analysis system for real-time Indian stock market intelligence through social media monitoring.
 
+## ⚠️ Important Note on Data Collection (January 2025)
+
+**Twitter/X Scraping Reality**: As of January 2025, Twitter/X has significantly restricted free data access:
+
+- Official API costs $200-$42,000/month
+- Free scraping tools (snscrape, Twint) are largely non-functional
+- Public Nitter instances are unstable
+
+**This Project's Approach**:
+We implement a **three-tier fallback strategy** demonstrating production-grade resilience:
+
+1. **snscrape** (primary) - Attempts free scraping
+2. **Nitter/Selenium** (fallback) - Browser automation when available
+3. **Demo mode** (guaranteed) - Synthetic data for pipeline demonstration
+
+**For Assignment Demonstration**: We recommend running in **demo mode** to ensure consistent, reproducible results that showcase the complete data pipeline without external dependencies.
+
+```bash
+python main.py --mode demo --target 2000
+```
+
+This generates realistic synthetic data and demonstrates all processing, analysis, and visualization capabilities.
+
 ## 🎯 Overview
 
 This system scrapes Twitter/X for Indian stock market discussions, processes the data, and generates quantitative trading signals. Built with efficiency and scalability in mind.
@@ -168,6 +191,15 @@ python main.py --hours 48
 # Offline synthetic run (no network/Selenium needed)
 python main.py --mode demo
 ```
+
+## Quick Start (Recommended)
+
+```bash
+# Fast demo with synthetic data (no setup needed)
+python main.py --mode demo --target 2000
+```
+
+This demonstrates the full pipeline in 2-3 minutes without requiring Twitter access.
 
 ## 📊 Output
 

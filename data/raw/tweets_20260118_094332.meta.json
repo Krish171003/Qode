@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-18T07:10:42.147460",
+  "timestamp": "2026-01-18T09:43:32.509944",
   "total_records": 2000,
   "columns": [
     "id",
@@ -25,6 +25,6 @@
     "mentions": "object",
     "url": "object"
   },
-  "file_size_mb": 0.08528900146484375,
-  "data_file": "data\\raw\\tweets_20260118_071041.parquet"
+  "file_size_mb": 0.08558082580566406,
+  "data_file": "data\\raw\\tweets_20260118_094332.parquet"
 }

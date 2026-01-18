@@ -395,6 +395,14 @@ class TwitterScraper:
     # --- Demo data --------------------------------------------------------
     def _fallback_demo_data(self, target_count):
         """Fallback to demo data if scraping fails or demo mode selected."""
+        logger.warning("=" * 60)
+        logger.warning("DEMO MODE: Generating synthetic data")
+        logger.warning("=" * 60)
+        logger.warning("Note: As of Jan 2025, free Twitter scraping is highly restricted.")
+        logger.warning("This demo mode showcases the complete data pipeline using")
+        logger.warning("realistic synthetic data for reliable demonstration.")
+        logger.warning("For production, integrate Twitter API or paid data providers.")
+        logger.warning("=" * 60)
         logger.warning("Generating %s synthetic tweets for demo/testing.", target_count)
 
         tweets = []

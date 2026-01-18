@@ -29,6 +29,9 @@ mkdir -p data output logs output/plots
 
 # Download NLTK data
 python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('stopwords', quiet=True)"
+python main.py --mode nitter --target 2000 --browser chrome --headless
+# In setup.sh, after the other nltk downloads:
+python -c "import nltk; nltk.download('vader_lexicon', quiet=True)"
 
 echo ""
 echo "✅ Setup complete!"

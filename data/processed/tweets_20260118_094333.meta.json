@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-01-18T07:10:42.767259",
-  "total_records": 1472,
+  "timestamp": "2026-01-18T09:43:33.125082",
+  "total_records": 1497,
   "columns": [
     "id",
     "username",
@@ -33,6 +33,6 @@
     "engagement_score": "float64",
     "processed_at": "object"
   },
-  "file_size_mb": 0.09618663787841797,
-  "data_file": "data\\processed\\tweets_20260118_071042.parquet"
+  "file_size_mb": 0.09782218933105469,
+  "data_file": "data\\processed\\tweets_20260118_094333.parquet"
 }
