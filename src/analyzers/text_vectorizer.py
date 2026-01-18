@@ -1,9 +1,3 @@
-# src/analyzers/text_vectorizer.py
-"""
-Text Vectorization Module
-Converts text to numerical features using TF-IDF and custom features
-"""
-
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -16,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class TextVectorizer:
-    """Transforms text data into numerical vectors for ML"""
     
     def __init__(self, config):
         self.config = config
@@ -38,7 +31,6 @@ class TextVectorizer:
         self.sentiment = SentimentAnalyzer(config) if config['analysis']['sentiment'].get('enabled') else None
         
     def transform(self, tweets):
-        """Transform tweets into feature matrix"""
         logger.info("Generating text features...")
         
         # Extract text content
@@ -70,7 +62,6 @@ class TextVectorizer:
         return combined
     
     def _extract_custom_features(self, tweets):
-        """Extract domain-specific features"""
         features = []
         
         for tweet in tweets:
@@ -126,7 +117,6 @@ class TextVectorizer:
         return feature_array
     
     def _get_custom_feature_names(self):
-        """Get names of custom features"""
         return [
             'log_likes', 'log_retweets', 'log_replies', 'engagement_score',
             'text_length', 'word_count', 'hashtag_count', 'mention_count', 'url_count',
@@ -136,7 +126,6 @@ class TextVectorizer:
         ]
     
     def get_top_features(self, n=20):
-        """Get most important features"""
         # Get TF-IDF feature importances
         tfidf_scores = self.tfidf.idf_
         tfidf_names = self.tfidf.get_feature_names_out()
@@ -146,5 +135,3 @@ class TextVectorizer:
         top_features = [(tfidf_names[i], tfidf_scores[i]) for i in top_indices]
         
         return sorted(top_features, key=lambda x: x[1], reverse=True)
-
-

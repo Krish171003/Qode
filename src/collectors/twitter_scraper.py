@@ -1,11 +1,3 @@
-"""
-Twitter scraper for market intelligence without paid APIs.
-
-Primary path: `snscrape` (no auth needed, fast, resilient).
-Fallback path: Nitter via Selenium when public mirrors are available.
-Demo path: synthetic data for offline testing and CI.
-"""
-
 import logging
 import random
 import re
@@ -15,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 try:
     import snscrape.modules.twitter as sntwitter
-except Exception:  # pragma: no cover - optional dependency
+except Exception:  
     sntwitter = None
 
 from selenium import webdriver
@@ -26,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class TwitterScraper:
-    """Scrapes real Twitter data without using paid APIs."""
 
     def __init__(self, config):
         self.config = config
@@ -53,7 +44,6 @@ class TwitterScraper:
             self._setup_driver()
 
     def _setup_driver(self):
-        """Initialize Selenium WebDriver."""
         browser_type = self.config["scraping"]["browser"]
 
         logger.info("Setting up %s driver for Nitter scraping...", browser_type)
@@ -81,7 +71,6 @@ class TwitterScraper:
         logger.info("[init] Selenium driver ready")
 
     def scrape_tweets(self):
-        """Main scraping orchestration."""
         target_count = self.config["scraping"]["target_tweets"]
         hashtags = self.config["scraping"]["hashtags"]
 
@@ -108,9 +97,7 @@ class TwitterScraper:
         logger.warning("All scraping strategies failed; generating demo data.")
         return self._fallback_demo_data(target_count)
 
-    # --- snscrape path ----------------------------------------------------
     def _scrape_with_snscrape(self, target_count, hashtags):
-        """Scrape using snscrape with concurrent hashtag workers."""
         if not sntwitter:
             logger.error("snscrape is not installed; install it or switch mode to nitter.")
             return []
@@ -175,13 +162,11 @@ class TwitterScraper:
 
         return collected[:target_count]
 
-    # --- Nitter (Selenium) path ------------------------------------------
     def _scrape_with_nitter(self, target_count, hashtags):
-        """Scrape using public Nitter mirrors with Selenium."""
         if self.mode != "nitter" and not self.driver:
             try:
                 self._setup_driver()
-            except Exception as exc:  # pragma: no cover - environment dependent
+            except Exception as exc:  
                 logger.error("Failed to start Selenium: %s", exc)
                 return []
 
@@ -209,7 +194,6 @@ class TwitterScraper:
         return self.tweets_collected
 
     def _find_working_instance(self):
-        """Test Nitter instances to find a working one."""
         logger.info("Testing Nitter instances (mirrors can be unstable).")
 
         for instance in self.nitter_instances:
@@ -229,7 +213,6 @@ class TwitterScraper:
         return None
 
     def _scrape_nitter_hashtag(self, hashtag, target_count):
-        """Scrape tweets for a specific hashtag from Nitter."""
         clean_tag = hashtag.replace("#", "").strip()
         since_date = (datetime.now(timezone.utc) - timedelta(hours=self.time_window_hours)).strftime(
             "%Y-%m-%d"
@@ -269,7 +252,6 @@ class TwitterScraper:
             logger.error("Error scraping %s: %s", hashtag, exc)
 
     def _extract_nitter_tweets(self):
-        """Extract tweets from the current Nitter page."""
         try:
             tweet_containers = self.driver.find_elements(By.CSS_SELECTOR, ".timeline-item")
             if not tweet_containers:
@@ -296,7 +278,6 @@ class TwitterScraper:
             logger.error("Error extracting tweets: %s", exc, exc_info=True)
 
     def _parse_nitter_tweet(self, container):
-        """Parse individual Nitter tweet element."""
         try:
             content_elem = container.find_element(By.CLASS_NAME, "tweet-content")
             content = content_elem.text.strip()
@@ -355,7 +336,6 @@ class TwitterScraper:
             return None
 
     def _extract_nitter_metric(self, container, icon_class):
-        """Extract engagement metric from Nitter."""
         try:
             stats = container.find_elements(By.CLASS_NAME, "tweet-stat")
 
@@ -379,7 +359,6 @@ class TwitterScraper:
             return 0
 
     def _human_scroll(self):
-        """Human-like scrolling to reduce bot detection on mirrors."""
         if not self.driver:
             return
         scroll_height = random.uniform(0.6, 1.0)
@@ -392,9 +371,7 @@ class TwitterScraper:
         )
         time.sleep(delay)
 
-    # --- Demo data --------------------------------------------------------
     def _fallback_demo_data(self, target_count):
-        """Fallback to demo data if scraping fails or demo mode selected."""
         logger.warning("=" * 60)
         logger.warning("DEMO MODE: Generating synthetic data")
         logger.warning("=" * 60)
@@ -446,7 +423,6 @@ class TwitterScraper:
         return tweets
 
     def close(self):
-        """Cleanup resources."""
         if self.driver:
             logger.info("Closing browser...")
             self.driver.quit()

@@ -1,37 +1,16 @@
-# src/processors/deduplicator.py
-"""
-Efficient Deduplication Module
-Uses hash-based approach for O(1) duplicate detection
-"""
-
 import hashlib
 import logging
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
-
 class Deduplicator:
-    """Removes duplicate tweets efficiently"""
     
     def __init__(self, config):
         self.config = config
         self.hash_cache = set()
         
     def deduplicate(self, tweets):
-        """
-    Remove duplicates using content hash
-    
-    Complexity Analysis:
-    - Hash-based: O(n) - current implementation
-    - Pairwise comparison: O(n²) - avoided
-    
-    For 2000 tweets:
-    - Hash approach: ~2000 operations
-    - Naive approach: ~4,000,000 operations
-    
-    Memory: O(n) for hash set
-    """
 
         logger.info("Deduplicating tweets...")
         
@@ -55,7 +34,6 @@ class Deduplicator:
         return unique_tweets
     
     def _hash_content(self, content):
-        """Generate SHA256 hash of content"""
         # Normalize content before hashing
         normalized = content.lower().strip()
         normalized = ' '.join(normalized.split())  # Remove extra spaces
@@ -63,7 +41,6 @@ class Deduplicator:
         return hashlib.sha256(normalized.encode('utf-8')).hexdigest()
     
     def find_near_duplicates(self, tweets, threshold=0.8):
-        """Find near-duplicates using Jaccard similarity (optional)"""
         # This is more computationally expensive but catches similar tweets
         logger.info("Finding near-duplicates...")
         

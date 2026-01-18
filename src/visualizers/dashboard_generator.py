@@ -1,9 +1,3 @@
-# src/visualizers/dashboard_generator.py
-"""
-Dashboard Generation Module
-Creates HTML dashboard with all visualizations
-"""
-
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -13,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class DashboardGenerator:
-    """Generates interactive HTML dashboard"""
     
     def __init__(self, config):
         self.config = config
@@ -21,7 +14,6 @@ class DashboardGenerator:
         self.output_dir.mkdir(exist_ok=True)
         
     def create_dashboard(self, tweets, signals):
-        """Create comprehensive HTML dashboard"""
         logger.info("Generating dashboard...")
         
         # Convert to DataFrames
@@ -52,7 +44,6 @@ class DashboardGenerator:
         return dashboard_path
     
     def _calculate_statistics(self, tweets_df, signals_df):
-        """Calculate summary statistics"""
         stats = {
             'total_tweets': len(tweets_df),
             'unique_users': tweets_df['username'].nunique() if 'username' in tweets_df.columns else 0,
@@ -67,7 +58,6 @@ class DashboardGenerator:
         return stats
     
     def _generate_html(self, stats, plot1, plot2, plot3, plot4):
-        """Generate HTML content"""
         
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         

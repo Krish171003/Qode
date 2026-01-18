@@ -1,9 +1,3 @@
-# src/processors/data_cleaner.py
-"""
-Data Cleaning and Normalization Module
-Handles text preprocessing, Unicode normalization, and data validation
-"""
-
 import re
 import logging
 from datetime import datetime, timedelta, timezone
@@ -14,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class DataCleaner:
-    """Cleans and normalizes tweet data for analysis"""
     
     def __init__(self, config):
         self.config = config
@@ -24,7 +17,6 @@ class DataCleaner:
         self.time_window_hours = config['scraping']['time_window_hours']
         
     def clean(self, tweets):
-        """Main cleaning pipeline"""
         logger.info("Starting data cleaning pipeline...")
         
         cleaned = []
@@ -33,7 +25,7 @@ class DataCleaner:
             'removed_invalid': 0,
             'removed_out_of_window': 0,
             'removed_invalid_timestamp': 0,
-            'removed_language': 0,  # Added for debugging
+            'removed_language': 0,  
             'cleaned': 0,
         }
         cutoff_time = datetime.now(timezone.utc) - timedelta(hours=self.time_window_hours)
@@ -62,7 +54,6 @@ class DataCleaner:
                 # Language gate (keeps English/Hindi focus)
                 language = self._detect_language(content)
                 
-                # FIX: Check if language is in allowed list OR if allowed list is empty/None
                 if self.allowed_languages and language not in self.allowed_languages:
                     stats['removed_language'] += 1
                     logger.debug(f"Removed tweet with language '{language}', allowed: {self.allowed_languages}")
@@ -85,7 +76,6 @@ class DataCleaner:
         return cleaned
     
     def _clean_tweet(self, tweet, tweet_timestamp, language):
-        """Clean individual tweet"""
         # Deep copy to avoid modifying original
         cleaned = tweet.copy()
         
@@ -140,7 +130,6 @@ class DataCleaner:
         return cleaned if len(content) >= self.min_length else None
     
     def _normalize_unicode(self, text):
-        """Normalize Unicode characters (handles Hindi, emojis, etc.)"""
         text = unicodedata.normalize('NFKC', text)
         # Strip zero-width and control characters
         text = re.sub(r'[\u200b-\u200d\uFEFF]', '', text)
@@ -149,13 +138,12 @@ class DataCleaner:
         return text.strip()
     
     def _detect_language(self, text):
-        """Simple language detection (English vs Hindi)"""
         # Count Devanagari characters
         hindi_chars = sum(1 for c in text if '\u0900' <= c <= '\u097F')
         total_chars = len(text.replace(' ', ''))
         
         if total_chars == 0:
-            return 'en'  # FIX: Default to 'en' instead of 'unknown'
+            return 'en'
         
         hindi_ratio = hindi_chars / total_chars
         
@@ -164,7 +152,6 @@ class DataCleaner:
         return 'en'
 
     def _parse_timestamp(self, timestamp):
-        """Parse tweet timestamps from Nitter or ISO formats."""
         if not timestamp:
             return None
 

@@ -1,6 +1,3 @@
-#!/bin/bash
-# Quick setup script for Qode Market Intelligence
-
 echo "🚀 Qode Market Intelligence - Quick Setup"
 echo "=========================================="
 

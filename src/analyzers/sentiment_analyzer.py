@@ -1,9 +1,3 @@
-# src/analyzers/sentiment_analyzer.py
-"""
-Sentiment Analysis Module
-Provides enhanced sentiment scoring
-"""
-
 import logging
 import re
 import numpy as np
@@ -12,12 +6,10 @@ logger = logging.getLogger(__name__)
 
 
 class SentimentAnalyzer:
-    """Advanced sentiment analysis for market tweets"""
     
     def __init__(self, config):
         self.config = config
         
-        # Market-specific lexicons
         self.bullish_terms = [
             'buy', 'long', 'bullish', 'call', 'up', 'gain', 'profit', 'rise',
             'surge', 'rally', 'breakout', 'support', 'bounce', 'uptrend',
@@ -31,7 +23,6 @@ class SentimentAnalyzer:
         ]
         
     def analyze(self, text):
-        """Analyze sentiment of text"""
         text_lower = text.lower()
         
         # Count bullish/bearish terms
@@ -48,5 +39,4 @@ class SentimentAnalyzer:
         return sentiment
     
     def batch_analyze(self, texts):
-        """Analyze sentiment for multiple texts"""
         return [self.analyze(text) for text in texts]

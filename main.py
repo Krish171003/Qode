@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Qode Market Intelligence - Main Orchestration Script
-Author: Built for Qode Technical Assignment
-"""
-
 import argparse
 import sys
 import time
@@ -25,14 +19,12 @@ import yaml
 
 
 def load_config():
-    """Load configuration from yaml file"""
     config_path = Path(__file__).parent / "config.yaml"
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
 
 def parse_arguments():
-    """Parse command line arguments"""
     parser = argparse.ArgumentParser(
         description="Qode Market Intelligence System"
     )
@@ -80,7 +72,6 @@ def parse_arguments():
 
 
 def main():
-    """Main execution flow"""
     
     args = parse_arguments()
     config = load_config()

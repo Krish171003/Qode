@@ -1,9 +1,3 @@
-# src/utils/validators.py
-"""
-Data Validation Utilities
-Ensures data quality and integrity
-"""
-
 import logging
 from datetime import datetime
 import re
@@ -12,11 +6,9 @@ logger = logging.getLogger(__name__)
 
 
 class DataValidator:
-    """Validates tweet data structure and content"""
     
     @staticmethod
     def validate_tweet(tweet):
-        """Validate a single tweet dictionary"""
         required_fields = ['content', 'timestamp', 'username']
         
         # Check required fields
@@ -49,7 +41,6 @@ class DataValidator:
     
     @staticmethod
     def validate_batch(tweets):
-        """Validate a batch of tweets"""
         valid_tweets = []
         invalid_count = 0
         
@@ -66,7 +57,6 @@ class DataValidator:
     
     @staticmethod
     def sanitize_text(text):
-        """Sanitize text content"""
         if not isinstance(text, str):
             return ""
         

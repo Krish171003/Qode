@@ -1,8 +1,3 @@
-# tests/test_processors.py
-"""
-Unit tests for data processors
-"""
-
 import pytest
 from src.processors.data_cleaner import DataCleaner
 from src.processors.deduplicator import Deduplicator
@@ -21,7 +16,6 @@ def config():
 
 @pytest.fixture
 def sample_tweets():
-    """Sample tweet data for testing"""
     return [
         {
             'id': '1',
@@ -60,7 +54,6 @@ def sample_tweets():
 
 
 def test_data_cleaner(config, sample_tweets):
-    """Test data cleaning"""
     cleaner = DataCleaner(config)
     cleaned = cleaner.clean(sample_tweets)
     
@@ -71,7 +64,6 @@ def test_data_cleaner(config, sample_tweets):
 
 
 def test_deduplicator(config, sample_tweets):
-    """Test deduplication"""
     deduplicator = Deduplicator(config)
     unique = deduplicator.deduplicate(sample_tweets)
     
@@ -80,7 +72,6 @@ def test_deduplicator(config, sample_tweets):
 
 
 def test_hash_content(config):
-    """Test content hashing"""
     deduplicator = Deduplicator(config)
     
     hash1 = deduplicator._hash_content("Test content")

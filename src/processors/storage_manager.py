@@ -1,8 +1,3 @@
-"""
-Storage Manager - Handles data persistence
-Supports Parquet format with compression
-"""
-
 import pandas as pd
 import logging
 from pathlib import Path
@@ -13,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class StorageManager:
-    """Manages data storage in various formats"""
     
     def __init__(self, config):
         self.config = config
@@ -25,7 +19,6 @@ class StorageManager:
         (self.output_dir / 'processed').mkdir(exist_ok=True)
         
     def save(self, tweets, format='parquet', stage='processed'):
-        """Save tweets to storage."""
         logger.info(f"Saving {len(tweets)} tweets in {format} format (stage={stage})...")
         
         # Convert to DataFrame
@@ -59,7 +52,6 @@ class StorageManager:
         return filepath
     
     def save_signals(self, signals):
-        """Save trading signals"""
         logger.info(f"Saving {len(signals)} signals...")
         
         df = pd.DataFrame(signals)
@@ -73,7 +65,6 @@ class StorageManager:
         return filepath
     
     def _save_metadata(self, df, data_filepath):
-        """Save dataset metadata"""
         metadata = {
             'timestamp': datetime.now().isoformat(),
             'total_records': len(df),
@@ -90,7 +81,6 @@ class StorageManager:
         logger.debug(f"Metadata saved to {meta_path}")
     
     def load(self, filepath):
-        """Load tweets from storage"""
         filepath = Path(filepath)
         
         if filepath.suffix == '.parquet':
@@ -103,7 +93,6 @@ class StorageManager:
             raise ValueError(f"Unsupported format: {filepath.suffix}")
     
     def get_latest_file(self, pattern='tweets_*.parquet'):
-        """Get most recent data file"""
         files = list(self.output_dir.glob(f'**/{pattern}'))
         if not files:
             return None

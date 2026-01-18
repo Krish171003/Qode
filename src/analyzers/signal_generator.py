@@ -1,10 +1,3 @@
-
-# src/analyzers/signal_generator.py
-"""
-Trading Signal Generation Module
-Converts text features into actionable trading signals
-"""
-
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -15,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class SignalGenerator:
-    """Generates trading signals from tweet features"""
     
     def __init__(self, config):
         self.config = config
@@ -23,7 +15,6 @@ class SignalGenerator:
         self.lookback_minutes = config['analysis']['signals']['lookback_minutes']
         
     def generate_signals(self, tweets, features):
-        """Main signal generation pipeline"""
         logger.info("Generating trading signals...")
         
         signals = []
@@ -44,7 +35,6 @@ class SignalGenerator:
         return signals
     
     def _generate_windowed_signals(self, df):
-        """Generate signals using sliding time windows"""
         signals = []
         
         # Group by time windows
@@ -62,7 +52,6 @@ class SignalGenerator:
         return signals
     
     def _analyze_window(self, group, window_time):
-        """Analyze a time window to generate signal"""
         
         # Calculate sentiment score
         sentiment_score = self._calculate_sentiment(group)
@@ -104,7 +93,6 @@ class SignalGenerator:
         }
     
     def _calculate_sentiment(self, group):
-        """Calculate aggregate sentiment from tweets"""
         scores = []
         
         for _, row in group.iterrows():
@@ -130,7 +118,6 @@ class SignalGenerator:
         return np.tanh(np.mean(scores))  # Normalize to [-1, 1]
     
     def _calculate_momentum(self, group):
-        """Calculate momentum from engagement patterns"""
         
         # Sort by time
         group = group.sort_values('timestamp')
@@ -156,7 +143,6 @@ class SignalGenerator:
         return np.tanh(momentum)  # Normalize
     
     def _detect_dominant_index(self, group):
-        """Detect which index is most mentioned"""
         index_counts = defaultdict(int)
         
         for _, row in group.iterrows():
@@ -179,7 +165,6 @@ class SignalGenerator:
         return max(index_counts, key=index_counts.get)
     
     def _get_top_hashtags(self, group, n=3):
-        """Get most common hashtags in window"""
         all_hashtags = []
         for hashtags in group['hashtags']:
             all_hashtags.extend(hashtags)

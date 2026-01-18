@@ -1,9 +1,3 @@
-# src/visualizers/memory_efficient_plots.py
-"""
-Memory-Efficient Visualization Module
-Handles large datasets with sampling and streaming techniques
-"""
-
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt

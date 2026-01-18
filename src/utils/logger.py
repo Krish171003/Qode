@@ -1,9 +1,3 @@
-# src/utils/logger.py
-"""
-Custom Logging Configuration
-Provides colored console output and file logging
-"""
-
 import logging
 import colorlog
 from pathlib import Path
@@ -11,7 +5,6 @@ from datetime import datetime
 
 
 def setup_logger(config):
-    """Setup and configure logger"""
     
     # Create logs directory
     log_dir = Path(config['logging']['log_dir'])
