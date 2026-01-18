@@ -39,7 +39,7 @@ class SignalGenerator:
         # Generate signals by time window
         signals = self._generate_windowed_signals(df)
         
-        logger.info(f"✓ Generated {len(signals)} signals")
+        logger.info(f"[ok] Generated {len(signals)} signals")
         
         return signals
     

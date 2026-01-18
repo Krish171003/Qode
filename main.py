@@ -60,6 +60,12 @@ def parse_arguments():
         help='Run browser in headless mode'
     )
     parser.add_argument(
+        '--mode',
+        choices=['snscrape', 'nitter', 'demo'],
+        default=None,
+        help='Scraping mode: snscrape (default), nitter (selenium), or demo (synthetic)'
+    )
+    parser.add_argument(
         '--debug',
         action='store_true',
         help='Enable debug logging'
@@ -88,6 +94,10 @@ def main():
         config['scraping']['time_window_hours'] = args.hours
     if args.headless:
         config['scraping']['headless'] = True
+    if args.mode:
+        config['scraping']['mode'] = args.mode
+    if args.demo:
+        config['scraping']['mode'] = 'demo'
     if args.debug:
         config['logging']['level'] = 'DEBUG'
     
@@ -98,8 +108,7 @@ def main():
     logger.info("=" * 60)
     
     if args.demo:
-        logger.warning("\n⚠️  RUNNING IN DEMO MODE - Using synthetic data")
-        logger.warning("For real scraping, Twitter login is currently required\n")
+        logger.warning("\n[WARN] RUNNING IN DEMO MODE - Using synthetic data only\n")
     
     # Initialize performance monitor
     perf_monitor = PerformanceMonitor()
@@ -112,39 +121,42 @@ def main():
         
         logger.info(f"Target: {config['scraping']['target_tweets']} tweets")
         logger.info(f"Hashtags: {', '.join(config['scraping']['hashtags'])}")
-        
-        if not args.demo:
+        logger.info(f"Scrape mode: {config['scraping'].get('mode', 'snscrape')}")
+        if config['scraping'].get('mode') == 'nitter':
             logger.info(f"Browser: {config['scraping']['browser']}")
         
         raw_tweets = scraper.scrape_tweets()
-        logger.info(f"✓ Collected {len(raw_tweets)} raw tweets")
-        
+        logger.info(f"[ok] Collected {len(raw_tweets)} raw tweets")
+
         if len(raw_tweets) == 0:
             logger.warning("No tweets collected. Exiting...")
             logger.warning("\nTip: Try running with --demo flag to see the full pipeline:")
             logger.warning("  python main.py --demo")
             return
         
+        storage = StorageManager(config)
+        raw_format = 'json' if args.demo else config['storage']['format']
+        raw_snapshot = storage.save(raw_tweets, raw_format, stage='raw')
+        logger.info(f"[ok] Raw snapshot saved to: {raw_snapshot}")
+        
         # Step 2: Data Cleaning
         logger.info("\n[STEP 2/5] Cleaning and Processing Data...")
         cleaner = DataCleaner(config)
         cleaned_tweets = cleaner.clean(raw_tweets)
-        logger.info(f"✓ Cleaned {len(cleaned_tweets)} tweets")
+        logger.info(f"[ok] Cleaned {len(cleaned_tweets)} tweets")
         
         # Step 3: Deduplication
         logger.info("\n[STEP 3/5] Removing Duplicates...")
         deduplicator = Deduplicator(config)
         unique_tweets = deduplicator.deduplicate(cleaned_tweets)
-        logger.info(f"✓ {len(unique_tweets)} unique tweets remaining")
+        logger.info(f"[ok] {len(unique_tweets)} unique tweets remaining")
         
         # Step 4: Storage
         logger.info("\n[STEP 4/5] Saving to Storage...")
-        storage = StorageManager(config)
-        
         # Save as CSV for compatibility
         format_type = 'csv' if args.demo else config['storage']['format']
         data_path = storage.save(unique_tweets, format_type)
-        logger.info(f"✓ Data saved to: {data_path}")
+        logger.info(f"[ok] Data saved to: {data_path}")
         
         # Step 5: Analysis & Signals
         logger.info("\n[STEP 5/5] Generating Trading Signals...")
@@ -152,16 +164,16 @@ def main():
         # Vectorization
         vectorizer = TextVectorizer(config)
         features = vectorizer.transform(unique_tweets)
-        logger.info(f"✓ Generated {features.shape[1]} features")
+        logger.info(f"[ok] Generated {features.shape[1]} features")
         
         # Signal Generation
         signal_gen = SignalGenerator(config)
         signals = signal_gen.generate_signals(unique_tweets, features)
-        logger.info(f"✓ Generated {len(signals)} trading signals")
+        logger.info(f"[ok] Generated {len(signals)} trading signals")
         
         # Save signals
         signals_path = storage.save_signals(signals)
-        logger.info(f"✓ Signals saved to: {signals_path}")
+        logger.info(f"[ok] Signals saved to: {signals_path}")
         
         # Step 6: Visualization
         logger.info("\n[BONUS] Generating Dashboard...")
@@ -170,7 +182,7 @@ def main():
             unique_tweets, 
             signals
         )
-        logger.info(f"✓ Dashboard created: {dashboard_path}")
+        logger.info(f"[ok] Dashboard created: {dashboard_path}")
         
         # Performance Summary
         perf_monitor.stop()
@@ -185,14 +197,13 @@ def main():
         logger.info(f"Processing Rate: {len(unique_tweets)/stats['elapsed_time']:.2f} tweets/sec")
         logger.info(f"Trading Signals: {len(signals)}")
         logger.info("=" * 60)
-        logger.info("✓ All tasks completed successfully!")
-        logger.info(f"✓ Check outputs in: {config['storage']['output_dir']}/")
-        logger.info(f"✓ Open dashboard: {dashboard_path}")
+        logger.info("[ok] All tasks completed successfully!")
+        logger.info(f"[ok] Check outputs in: {config['storage']['output_dir']}/")
+        logger.info(f"[ok] Open dashboard: {dashboard_path}")
         logger.info("=" * 60)
         
         if args.demo:
-            logger.warning("\n⚠️  Remember: This was demo mode with synthetic data")
-            logger.warning("For production use, implement real Twitter scraping with authentication")
+            logger.warning("\n[WARN] Demo mode used synthetic data. Switch mode to snscrape or nitter for real tweets.")
         
     except KeyboardInterrupt:
         logger.warning("\n\nProcess interrupted by user")

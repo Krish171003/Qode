@@ -10,6 +10,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import StandardScaler
 import logging
 import re
+from src.analyzers.sentiment_analyzer import SentimentAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class TextVectorizer:
         
         self.scaler = StandardScaler()
         self.feature_names = []
+        self.sentiment = SentimentAnalyzer(config) if config['analysis']['sentiment'].get('enabled') else None
         
     def transform(self, tweets):
         """Transform tweets into feature matrix"""
@@ -63,7 +65,7 @@ class TextVectorizer:
             self._get_custom_feature_names()
         )
         
-        logger.info(f"✓ Generated {combined.shape[1]} features")
+        logger.info(f"[ok] Generated {combined.shape[1]} features")
         
         return combined
     
@@ -110,6 +112,7 @@ class TextVectorizer:
                 
                 # Time references
                 'has_time_ref': int(bool(re.search(r'\b(today|tomorrow|intraday)\b', content.lower()))),
+                'lex_sentiment': self.sentiment.analyze(content) if self.sentiment else 0.0,
             }
             
             features.append(list(feat.values()))
@@ -129,7 +132,7 @@ class TextVectorizer:
             'text_length', 'word_count', 'hashtag_count', 'mention_count', 'url_count',
             'has_nifty', 'has_sensex', 'has_banknifty',
             'has_buy', 'has_sell', 'number_count',
-            'has_urgency', 'exclamation_count', 'is_question', 'has_time_ref'
+            'has_urgency', 'exclamation_count', 'is_question', 'has_time_ref', 'lex_sentiment'
         ]
     
     def get_top_features(self, n=20):

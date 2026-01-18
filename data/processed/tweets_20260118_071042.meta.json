@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-01-18T07:10:42.767259",
+  "total_records": 1472,
+  "columns": [
+    "id",
+    "username",
+    "content",
+    "timestamp",
+    "likes",
+    "retweets",
+    "replies",
+    "hashtags",
+    "mentions",
+    "url",
+    "content_clean",
+    "language",
+    "engagement_score",
+    "processed_at"
+  ],
+  "dtypes": {
+    "id": "object",
+    "username": "object",
+    "content": "object",
+    "timestamp": "object",
+    "likes": "int64",
+    "retweets": "int64",
+    "replies": "int64",
+    "hashtags": "object",
+    "mentions": "object",
+    "url": "object",
+    "content_clean": "object",
+    "language": "object",
+    "engagement_score": "float64",
+    "processed_at": "object"
+  },
+  "file_size_mb": 0.09618663787841797,
+  "data_file": "data\\processed\\tweets_20260118_071042.parquet"
+}

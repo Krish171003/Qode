@@ -73,7 +73,7 @@ def log_memory(func):
         result = func(*args, **kwargs)
         mem_after = process.memory_info().rss / 1024 / 1024
         logger.debug(f"{func.__name__} memory: {mem_before:.2f} -> {mem_after:.2f} MB "
-                    f"(Δ {mem_after - mem_before:.2f} MB)")
+                    f"(delta {mem_after - mem_before:.2f} MB)")
         return result
     return wrapper
 

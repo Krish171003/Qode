@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-01-18T07:10:42.147460",
+  "total_records": 2000,
+  "columns": [
+    "id",
+    "username",
+    "content",
+    "timestamp",
+    "likes",
+    "retweets",
+    "replies",
+    "hashtags",
+    "mentions",
+    "url"
+  ],
+  "dtypes": {
+    "id": "object",
+    "username": "object",
+    "content": "object",
+    "timestamp": "object",
+    "likes": "int64",
+    "retweets": "int64",
+    "replies": "int64",
+    "hashtags": "object",
+    "mentions": "object",
+    "url": "object"
+  },
+  "file_size_mb": 0.08528900146484375,
+  "data_file": "data\\raw\\tweets_20260118_071041.parquet"
+}

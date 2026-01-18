@@ -24,9 +24,9 @@ class StorageManager:
         (self.output_dir / 'raw').mkdir(exist_ok=True)
         (self.output_dir / 'processed').mkdir(exist_ok=True)
         
-    def save(self, tweets, format='parquet'):
-        """Save tweets to storage"""
-        logger.info(f"Saving {len(tweets)} tweets in {format} format...")
+    def save(self, tweets, format='parquet', stage='processed'):
+        """Save tweets to storage."""
+        logger.info(f"Saving {len(tweets)} tweets in {format} format (stage={stage})...")
         
         # Convert to DataFrame
         df = pd.DataFrame(tweets)
@@ -34,21 +34,24 @@ class StorageManager:
         # Generate filename with timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         
+        target_dir = self.output_dir / stage
+        target_dir.mkdir(exist_ok=True)
+        
         if format == 'parquet':
-            filepath = self.output_dir / 'processed' / f'tweets_{timestamp}.parquet'
+            filepath = target_dir / f'tweets_{timestamp}.parquet'
             df.to_parquet(
                 filepath,
                 compression=self.config['storage']['compression'],
                 index=False
             )
         elif format == 'csv':
-            filepath = self.output_dir / 'processed' / f'tweets_{timestamp}.csv'
+            filepath = target_dir / f'tweets_{timestamp}.csv'
             df.to_csv(filepath, index=False)
         elif format == 'json':
-            filepath = self.output_dir / 'processed' / f'tweets_{timestamp}.json'
+            filepath = target_dir / f'tweets_{timestamp}.json'
             df.to_json(filepath, orient='records', indent=2)
         
-        logger.info(f"✓ Saved to: {filepath}")
+        logger.info(f"[ok] Saved to: {filepath}")
         
         # Save metadata
         self._save_metadata(df, filepath)
@@ -66,7 +69,7 @@ class StorageManager:
         
         df.to_csv(filepath, index=False)
         
-        logger.info(f"✓ Signals saved to: {filepath}")
+        logger.info(f"[ok] Signals saved to: {filepath}")
         return filepath
     
     def _save_metadata(self, df, data_filepath):

@@ -48,7 +48,7 @@ class DashboardGenerator:
         with open(dashboard_path, 'w', encoding='utf-8') as f:
             f.write(html)
         
-        logger.info(f"✓ Dashboard saved to {dashboard_path}")
+        logger.info(f"[ok] Dashboard saved to {dashboard_path}")
         return dashboard_path
     
     def _calculate_statistics(self, tweets_df, signals_df):

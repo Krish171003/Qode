@@ -84,7 +84,7 @@ class MemoryEfficientPlotter:
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
         
-        logger.info(f"✓ Saved to {output_path}")
+        logger.info(f"[ok] Saved to {output_path}")
         return output_path
     
     def plot_hashtag_frequency(self, df, output_name='hashtag_frequency.png', top_n=15):
@@ -133,7 +133,7 @@ class MemoryEfficientPlotter:
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
         
-        logger.info(f"✓ Saved to {output_path}")
+        logger.info(f"[ok] Saved to {output_path}")
         return output_path
     
     def plot_engagement_heatmap(self, df, output_name='engagement_heatmap.png'):
@@ -177,7 +177,7 @@ class MemoryEfficientPlotter:
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
         
-        logger.info(f"✓ Saved to {output_path}")
+        logger.info(f"[ok] Saved to {output_path}")
         return output_path
     
     def plot_signal_strength(self, signals_df, output_name='signal_strength.png'):
@@ -226,7 +226,7 @@ class MemoryEfficientPlotter:
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
         
-        logger.info(f"✓ Saved to {output_path}")
+        logger.info(f"[ok] Saved to {output_path}")
         return output_path
     
     def _sample_data(self, df):

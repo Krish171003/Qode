@@ -1,6 +1,7 @@
 # Qode Market Intelligence Configuration
 
 scraping:
+  mode: "snscrape"  # options: snscrape (default), nitter (selenium), demo
   target_tweets: 2000
   time_window_hours: 24
 
@@ -15,6 +16,7 @@ scraping:
 
   browser: "chrome" # chrome or firefox
   headless: true
+  max_scrolls: 30
 
   delays:
     min_scroll: 2

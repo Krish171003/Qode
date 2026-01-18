@@ -1,0 +1,4 @@
+timestamp,index,direction,signal_strength,confidence,sentiment_score,momentum_score,tweet_count,avg_engagement,top_hashtags
+2025-01-17 10:00:00,NIFTY50,BULLISH,0.65,0.75,0.8,0.5,15,125.3,#nifty50,#bullish,#trading
+2025-01-17 10:30:00,BANKNIFTY,NEUTRAL,0.15,0.45,0.2,0.1,8,67.2,#banknifty,#intraday
+2025-01-17 11:00:00,SENSEX,BEARISH,-0.72,0.82,-0.85,-0.6,23,198.7,#sensex,#bearish,#sell

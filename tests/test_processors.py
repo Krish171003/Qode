@@ -12,7 +12,11 @@ import yaml
 @pytest.fixture
 def config():
     with open('config.yaml', 'r') as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+    cfg['scraping']['mode'] = 'demo'
+    cfg['scraping']['target_tweets'] = 25
+    cfg['scraping']['time_window_hours'] = 24 * 365 * 5  # keep fixtures valid
+    return cfg
 
 
 @pytest.fixture
@@ -63,6 +67,7 @@ def test_data_cleaner(config, sample_tweets):
     assert len(cleaned) > 0
     assert all('content_clean' in t for t in cleaned)
     assert all('engagement_score' in t for t in cleaned)
+    assert all('language' in t for t in cleaned)
 
 
 def test_deduplicator(config, sample_tweets):

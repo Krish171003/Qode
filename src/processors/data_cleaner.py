@@ -6,7 +6,7 @@ Handles text preprocessing, Unicode normalization, and data validation
 
 import re
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import emoji
 import unicodedata
 
@@ -20,6 +20,7 @@ class DataCleaner:
         self.config = config
         self.min_length = config['processing']['min_text_length']
         self.languages = config['processing']['languages']
+        self.allowed_languages = set(config['processing']['languages'])
         self.time_window_hours = config['scraping']['time_window_hours']
         
     def clean(self, tweets):
@@ -34,7 +35,7 @@ class DataCleaner:
             'removed_invalid_timestamp': 0,
             'cleaned': 0,
         }
-        cutoff_time = datetime.now() - timedelta(hours=self.time_window_hours)
+        cutoff_time = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=self.time_window_hours)
         
         for tweet in tweets:
             try:
@@ -50,9 +51,15 @@ class DataCleaner:
                 if len(tweet.get('content', '')) < self.min_length:
                     stats['removed_short'] += 1
                     continue
+
+                # Language gate (keeps English/Hindi focus)
+                language = self._detect_language(tweet.get('content', ''))
+                if self.allowed_languages and language not in self.allowed_languages:
+                    stats['removed_invalid'] += 1
+                    continue
                 
                 # Clean the tweet
-                cleaned_tweet = self._clean_tweet(tweet, tweet_timestamp)
+                cleaned_tweet = self._clean_tweet(tweet, tweet_timestamp, language)
                 
                 if cleaned_tweet:
                     cleaned.append(cleaned_tweet)
@@ -67,7 +74,7 @@ class DataCleaner:
         logger.info(f"Cleaning stats: {stats}")
         return cleaned
     
-    def _clean_tweet(self, tweet, tweet_timestamp):
+    def _clean_tweet(self, tweet, tweet_timestamp, language):
         """Clean individual tweet"""
         # Deep copy to avoid modifying original
         cleaned = tweet.copy()
@@ -100,6 +107,7 @@ class DataCleaner:
         # Update content
         cleaned['content'] = content
         cleaned['content_clean'] = content.lower()  # Lowercase version
+        cleaned['language'] = language
         
         # Ensure all required fields exist
         cleaned.setdefault('likes', 0)
@@ -123,10 +131,12 @@ class DataCleaner:
     
     def _normalize_unicode(self, text):
         """Normalize Unicode characters (handles Hindi, emojis, etc.)"""
-        # NFD normalization then remove combining characters
-        text = unicodedata.normalize('NFD', text)
-        # Keep only allowed characters (preserve Hindi/Devanagari)
-        return text
+        text = unicodedata.normalize('NFKC', text)
+        # Strip zero-width and control characters
+        text = re.sub(r'[\u200b-\u200d\uFEFF]', '', text)
+        text = text.replace('\r', ' ')
+        text = ' '.join(text.split())
+        return text.strip()
     
     def _detect_language(self, text):
         """Simple language detection (English vs Hindi)"""
@@ -149,7 +159,7 @@ class DataCleaner:
             return None
 
         if isinstance(timestamp, datetime):
-            return timestamp
+            return timestamp.astimezone(timezone.utc).replace(tzinfo=None) if timestamp.tzinfo else timestamp
 
         if isinstance(timestamp, (int, float)):
             try:
@@ -158,7 +168,7 @@ class DataCleaner:
                 return None
 
         if isinstance(timestamp, str):
-            cleaned = timestamp.replace('·', '').strip()
+            cleaned = re.sub(r'[·\u2022]', '', timestamp).strip()
             cleaned = ' '.join(cleaned.split())
             formats = [
                 '%b %d, %Y %I:%M %p %Z',
@@ -175,7 +185,10 @@ class DataCleaner:
                     continue
 
             try:
-                return datetime.fromisoformat(cleaned.replace('Z', '+00:00'))
+                parsed = datetime.fromisoformat(cleaned.replace('Z', '+00:00'))
+                if parsed.tzinfo:
+                    parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
+                return parsed
             except ValueError:
                 logger.debug("Unable to parse timestamp: %s", timestamp)
                 return None
